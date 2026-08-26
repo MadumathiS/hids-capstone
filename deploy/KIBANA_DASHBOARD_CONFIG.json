@@ -1,0 +1,354 @@
+{
+  "version": "8.0.0",
+  "objects": [
+    {
+      "type": "dashboard",
+      "id": "hids-security-dashboard",
+      "attributes": {
+        "title": "HIDS Security Monitoring Dashboard",
+        "description": "Real-time visualization of HIDS alerts and security events",
+        "panels": [
+          {
+            "version": "8.0.0",
+            "gridData": {
+              "x": 0,
+              "y": 0,
+              "w": 12,
+              "h": 15
+            },
+            "type": "visualization",
+            "id": "alerts-over-time",
+            "title": "Alerts Over Time"
+          },
+          {
+            "version": "8.0.0",
+            "gridData": {
+              "x": 12,
+              "y": 0,
+              "w": 12,
+              "h": 15
+            },
+            "type": "visualization",
+            "id": "severity-distribution",
+            "title": "Alerts by Severity"
+          },
+          {
+            "version": "8.0.0",
+            "gridData": {
+              "x": 0,
+              "y": 15,
+              "w": 12,
+              "h": 15
+            },
+            "type": "visualization",
+            "id": "alerts-by-category",
+            "title": "Alerts by Category"
+          },
+          {
+            "version": "8.0.0",
+            "gridData": {
+              "x": 12,
+              "y": 15,
+              "w": 12,
+              "h": 15
+            },
+            "type": "visualization",
+            "id": "recent-alerts-table",
+            "title": "Recent Alerts (Last 50)"
+          }
+        ]
+      }
+    },
+    {
+      "type": "visualization",
+      "id": "alerts-over-time",
+      "attributes": {
+        "title": "HIDS Alerts Over Time",
+        "visState": {
+          "title": "Alerts Over Time",
+          "type": "area",
+          "params": {
+            "grid": {"categoryLines": false},
+            "categoryAxes": [
+              {
+                "id": "CategoryAxis-1",
+                "type": "category",
+                "position": "bottom",
+                "show": true,
+                "style": {},
+                "scale": {"type": "linear"},
+                "labels": {"show": true, "truncate": 100},
+                "title": {}
+              }
+            ],
+            "valueAxes": [
+              {
+                "id": "ValueAxis-1",
+                "name": "Left",
+                "type": "value",
+                "position": "left",
+                "show": true,
+                "style": {},
+                "scale": {"type": "linear", "mode": "normal"},
+                "labels": {"show": true, "truncate": 100},
+                "title": {"text": "Count"}
+              }
+            ]
+          },
+          "aggs": [
+            {
+              "id": "1",
+              "enabled": true,
+              "type": "count",
+              "schema": "metric",
+              "params": {}
+            },
+            {
+              "id": "2",
+              "enabled": true,
+              "type": "date_histogram",
+              "schema": "segment",
+              "params": {
+                "field": "@timestamp",
+                "interval": "auto",
+                "customInterval": "2h",
+                "min_doc_count": 1,
+                "extended_bounds": {}
+              }
+            },
+            {
+              "id": "3",
+              "enabled": true,
+              "type": "terms",
+              "schema": "group",
+              "params": {
+                "field": "severity.keyword",
+                "size": 5,
+                "order": "desc",
+                "orderBy": "1"
+              }
+            }
+          ]
+        },
+        "uiStateJSON": "{}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": {
+            "index": "hids-alerts",
+            "query": {"match_all": {}}
+          }
+        }
+      }
+    },
+    {
+      "type": "visualization",
+      "id": "severity-distribution",
+      "attributes": {
+        "title": "Alerts by Severity Distribution",
+        "visState": {
+          "title": "Severity Distribution",
+          "type": "pie",
+          "params": {
+            "addTooltip": true,
+            "isDonut": false,
+            "labels": {
+              "show": true,
+              "truncate": 100
+            }
+          },
+          "aggs": [
+            {
+              "id": "1",
+              "enabled": true,
+              "type": "count",
+              "schema": "metric",
+              "params": {}
+            },
+            {
+              "id": "2",
+              "enabled": true,
+              "type": "terms",
+              "schema": "segment",
+              "params": {
+                "field": "severity.keyword",
+                "size": 10,
+                "order": "desc",
+                "orderBy": "1"
+              }
+            }
+          ]
+        },
+        "uiStateJSON": "{}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": {
+            "index": "hids-alerts",
+            "query": {"match_all": {}}
+          }
+        }
+      }
+    },
+    {
+      "type": "visualization",
+      "id": "alerts-by-category",
+      "attributes": {
+        "title": "Alerts by Category",
+        "visState": {
+          "title": "Category Distribution",
+          "type": "bar",
+          "params": {
+            "grid": {"categoryLines": false},
+            "categoryAxes": [
+              {
+                "id": "CategoryAxis-1",
+                "type": "category",
+                "position": "left",
+                "show": true,
+                "style": {},
+                "scale": {"type": "linear"},
+                "labels": {"show": true, "truncate": 100},
+                "title": {}
+              }
+            ],
+            "valueAxes": [
+              {
+                "id": "ValueAxis-1",
+                "name": "Right",
+                "type": "value",
+                "position": "right",
+                "show": true,
+                "style": {},
+                "scale": {"type": "linear", "mode": "normal"},
+                "labels": {"show": true, "truncate": 100},
+                "title": {"text": "Count"}
+              }
+            ]
+          },
+          "aggs": [
+            {
+              "id": "1",
+              "enabled": true,
+              "type": "count",
+              "schema": "metric",
+              "params": {}
+            },
+            {
+              "id": "2",
+              "enabled": true,
+              "type": "terms",
+              "schema": "segment",
+              "params": {
+                "field": "category.keyword",
+                "size": 10,
+                "order": "desc",
+                "orderBy": "1"
+              }
+            }
+          ]
+        },
+        "uiStateJSON": "{}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": {
+            "index": "hids-alerts",
+            "query": {"match_all": {}}
+          }
+        }
+      }
+    },
+    {
+      "type": "visualization",
+      "id": "recent-alerts-table",
+      "attributes": {
+        "title": "Recent Alerts Table",
+        "visState": {
+          "title": "Recent Alerts",
+          "type": "table",
+          "params": {
+            "perPage": 50,
+            "showPartialRows": false,
+            "showMeticsAtAllLevels": false,
+            "showTotal": false,
+            "totalFunc": "sum",
+            "percentageCol": ""
+          },
+          "aggs": [
+            {
+              "id": "1",
+              "enabled": true,
+              "type": "count",
+              "schema": "metric",
+              "params": {}
+            },
+            {
+              "id": "2",
+              "enabled": true,
+              "type": "terms",
+              "schema": "bucket",
+              "params": {
+                "field": "@timestamp",
+                "size": 50,
+                "order": "desc",
+                "orderBy": "1",
+                "customLabel": "Timestamp"
+              }
+            },
+            {
+              "id": "3",
+              "enabled": true,
+              "type": "terms",
+              "schema": "bucket",
+              "params": {
+                "field": "severity.keyword",
+                "size": 10,
+                "order": "desc",
+                "orderBy": "1",
+                "customLabel": "Severity"
+              }
+            },
+            {
+              "id": "4",
+              "enabled": true,
+              "type": "terms",
+              "schema": "bucket",
+              "params": {
+                "field": "category.keyword",
+                "size": 10,
+                "order": "desc",
+                "orderBy": "1",
+                "customLabel": "Category"
+              }
+            },
+            {
+              "id": "5",
+              "enabled": true,
+              "type": "terms",
+              "schema": "bucket",
+              "params": {
+                "field": "message.keyword",
+                "size": 100,
+                "order": "desc",
+                "orderBy": "1",
+                "customLabel": "Alert Message"
+              }
+            }
+          ]
+        },
+        "uiStateJSON": "{}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": {
+            "index": "hids-alerts",
+            "query": {"match_all": {}},
+            "sort": [{"@timestamp": {"order": "desc"}}]
+          }
+        }
+      }
+    },
+    {
+      "type": "index-pattern",
+      "id": "hids-alerts",
+      "attributes": {
+        "title": "hids-alerts",
+        "timeFieldName": "@timestamp",
+        "fields": "[{\"name\":\"@timestamp\",\"type\":\"date\"},{\"name\":\"severity\",\"type\":\"string\"},{\"name\":\"category\",\"type\":\"string\"},{\"name\":\"message\",\"type\":\"string\"},{\"name\":\"host\",\"type\":\"string\"},{\"name\":\"raw_alert\",\"type\":\"string\"}]"
+      }
+    }
+  ]
+}

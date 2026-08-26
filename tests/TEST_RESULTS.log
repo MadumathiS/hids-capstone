@@ -1,0 +1,49 @@
+# Sample HIDS Alert Logs
+
+## SCENARIO 1: New User Account Creation
+[2024-01-15 14:30:00] [CRITICAL] USER_ANOMALY: New account 'attacker' created with UID 1001
+[2024-01-15 14:30:05] [CRITICAL] USER_ANOMALY: User 'attacker' added to sudoers group
+[2024-01-15 14:30:10] [CRITICAL] USER_ANOMALY: New shell access granted to user 'attacker'
+[2024-01-15 14:30:15] [HIGH] USER_ANOMALY: Unexpected login from user 'attacker'
+
+## SCENARIO 2: SSH Key Addition
+[2024-01-15 14:35:00] [CRITICAL] FILE_INTEGRITY: /root/.ssh/authorized_keys modified
+[2024-01-15 14:35:05] [CRITICAL] FILE_INTEGRITY: SSH key added to root user
+[2024-01-15 14:35:10] [CRITICAL] FILE_INTEGRITY: Unauthorized public key detected in authorized_keys
+
+## SCENARIO 3: Critical File Modification
+[2024-01-15 14:40:00] [CRITICAL] FILE_INTEGRITY: /etc/passwd hash mismatch (SHA256 changed)
+[2024-01-15 14:40:05] [CRITICAL] FILE_INTEGRITY: /etc/passwd size changed from 2145 to 2178 bytes
+[2024-01-15 14:40:10] [CRITICAL] FILE_INTEGRITY: System file /etc/passwd modified
+[2024-01-15 14:40:15] [CRITICAL] FILE_INTEGRITY: /etc/shadow hash mismatch
+[2024-01-15 14:40:20] [CRITICAL] FILE_INTEGRITY: /etc/sudoers modified
+
+## SCENARIO 4: Suspicious Process from /tmp
+[2024-01-15 14:45:00] [HIGH] PROCESS_ANOMALY: Process '/tmp/malware' running as root
+[2024-01-15 14:45:05] [HIGH] PROCESS_ANOMALY: Executable from /tmp location detected
+[2024-01-15 14:45:10] [HIGH] PROCESS_ANOMALY: World-writable directory process: /tmp/malware
+[2024-01-15 14:45:15] [HIGH] PROCESS_ANOMALY: Suspicious parent-child relationship detected
+[2024-01-15 14:45:20] [HIGH] NETWORK_ANOMALY: Process '/tmp/malware' listening on port 4444
+
+## SCENARIO 5: Brute Force Login Attempts
+[2024-01-15 14:50:00] [HIGH] USER_ANOMALY: Failed login attempt for user 'root' from 192.168.1.100
+[2024-01-15 14:50:05] [HIGH] USER_ANOMALY: Failed login attempt for user 'root' from 192.168.1.100
+[2024-01-15 14:50:10] [HIGH] USER_ANOMALY: Failed login attempt for user 'root' from 192.168.1.100
+[2024-01-15 14:50:15] [HIGH] USER_ANOMALY: Failed login attempt for user 'root' from 192.168.1.100
+[2024-01-15 14:50:20] [HIGH] USER_ANOMALY: Failed login attempt for user 'root' from 192.168.1.100
+[2024-01-15 14:50:25] [CRITICAL] USER_ANOMALY: Brute force attempt detected! 5+ failed logins in 5 minutes
+
+## SYSTEM HEALTH ALERTS
+[2024-01-15 14:55:00] [MEDIUM] SYSTEM_HEALTH: CPU load average: 2.5 (warning threshold)
+[2024-01-15 14:55:05] [MEDIUM] SYSTEM_HEALTH: Memory usage: 85% (warning threshold)
+[2024-01-15 14:55:10] [CRITICAL] SYSTEM_HEALTH: Disk usage: 96% CRITICAL
+[2024-01-15 14:55:15] [MEDIUM] SYSTEM_HEALTH: I/O wait time: 45% (high)
+
+## ADDITIONAL SECURITY ALERTS
+[2024-01-15 15:00:00] [HIGH] NETWORK_ANOMALY: Listening port 31337 (known backdoor) detected
+[2024-01-15 15:00:05] [HIGH] NETWORK_ANOMALY: Unusual outbound connection to 192.168.1.50:8888
+[2024-01-15 15:00:10] [MEDIUM] PROCESS_ANOMALY: Unexpected SUID file detected: /tmp/setuid_binary
+[2024-01-15 15:00:15] [HIGH] FILE_INTEGRITY: /bin/bash permissions changed (SUID added)
+[2024-01-15 15:00:20] [HIGH] FILE_INTEGRITY: /usr/bin/sudo modified
+[2024-01-15 15:00:25] [LOW] SYSTEM_HEALTH: System updated to kernel 5.15.0-56-generic
+[2024-01-15 15:00:30] [LOW] FILE_INTEGRITY: Package manager cache updated
