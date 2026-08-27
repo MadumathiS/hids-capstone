@@ -2,13 +2,6 @@
 
 **Team Capstone Project: Monitor, detect, and respond to intrusions on Linux systems**
 
-![Status](https://img.shields.io/badge/status-complete-brightgreen)
-![Team Size](https://img.shields.io/badge/team-4%20people-blue)
-![Timeline](https://img.shields.io/badge/timeline-1%20week-orange)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
----
-
 ## 📋 Overview
 
 This is a **Host Intrusion Detection System (HIDS)** built entirely in Bash for a Linux Capstone Project. The tool monitors Linux systems for security threats across five critical monitoring areas.
@@ -133,31 +126,35 @@ Each scenario shows how HIDS detects different attack techniques.
 
 ## 📊 Project Structure
 
-```
 hids-capstone/
-├── README.md                      ← This file
+├── README.md
 ├── src/
-│   ├── hids                       ← Main HIDS script (500+ lines)
-│   └── config/hids.conf           ← Configuration template
+│   ├── hids
+│   └── config/hids.conf
 ├── docs/
-│   ├── research.md                ← Research phase findings
-│   ├── DESIGN.md                  ← Design decisions
-│   └── MODULES.md                 ← Technical module docs
+│   ├── research.md
+│   ├── DESIGN.md
+│   ├── MODULES.md
+│   ├── PREREQUISITES.md
+│   ├── SETUP.md
+│   └── EXECUTION_GUIDE.md
 ├── user-docs/
-│   ├── USER_README.md             ← How to use HIDS
-│   ├── QUICKSTART.md              ← 5-minute setup
-│   ├── CONFIGURATION.md           ← Threshold tuning
-│   └── TROUBLESHOOTING.md         ← Common issues
+│   ├── USER_README.md
+│   ├── QUICKSTART.md
+│   ├── CONFIGURATION.md
+│   └── TROUBLESHOOTING.md
 ├── tests/
-│   ├── scenario_*.sh              ← Attack simulations
-│   └── TEST_RESULTS.md            ← Testing findings
+│   ├── test-hids-complete.sh
+│   └── TEST_RESULTS.md
 ├── demo/
-│   ├── DEMO_GUIDE.md              ← Demo preparation
-│   ├── demo_script.sh             ← Copy-paste demo commands
-│   └── demo_checklist.md          ← Pre-demo verification
-
-```
-
+│   ├── DEMO_GUIDE.md
+│   ├── demo_script.sh
+│   └── demo_checklist.md
+└── deploy/
+    ├── docker-compose.yml
+    ├── install.sh
+    ├── KIBANA_DASHBOARD_CONFIG.json
+    └── KIBANA_DASHBOARD_CONFIG.ndjson
 ---
 
 ## 🎬 Live Demo
