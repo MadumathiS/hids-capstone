@@ -126,41 +126,38 @@ Each scenario shows how HIDS detects different attack techniques.
 
 ## 📊 Project Structure
 
+```
 hids-capstone/
-├── README.md
+├── README.md                           # Main project documentation
+├── deploy/
+|   ├── docker-compose.yml              # Elasticsearch 7.14.0 & Kibana 7.14.0
+|   ├── install.sh                      # Installation script
+|   ├── KIBANA_DASHBOARD_CONFIG.json    # Dashboard import file
+|   └── KIBANA_DASHBOARD_CONFIG.ndjson  # Alternative NDJSON Format
+├── docs/                               # Technical Documentation 
+│   ├── demo_checklist.md               # Pre-demo verification checklist
+│   ├── DEMO_GUIDE.md                   # Live presentation instructions
+|   ├── DESIGN.md                       # Architecture & design decisions
+|   ├── EMAIL_ALERTS_SETUP.md           # Email configuration guide
+|   ├── EXECUTION_GUIDE.md              # How to run HIDS
+│   ├── PREREQUISITES.md                # System requirements
+│   └──  research.md                    # Research findings
 ├── src/
-│   ├── hids
-│   └── config/hids.conf
-├── docs/
-│   ├── research.md
-│   ├── DESIGN.md
-│   ├── MODULES.md
-│   ├── PREREQUISITES.md
-│   ├── SETUP.md
-│   └── EXECUTION_GUIDE.md
-├── user-docs/
-│   ├── USER_README.md
-│   ├── QUICKSTART.md
-│   ├── CONFIGURATION.md
-│   └── TROUBLESHOOTING.md
+│   ├── hids                            # Main HIDS detection script
+│   └── config/hids.conf                # HIDS configuration file
 ├── tests/
-|   ├── test-hids-complete.sh        Combined test runner
-|   ├── TEST_RESULTS.md              Test documentation
-|   ├── scenario_1_new_user.sh       User account test
-|   ├── scenario_2_ssh_key.sh        SSH key test
-|   ├── scenario_3_process.sh        Process test
-|   ├── scenario_4_file_modify.sh    File modification test
-|   └── scenario_5_brute_force.sh    Brute force test
-|
-├── demo/
-│   ├── DEMO_GUIDE.md
-│   ├── demo_script.sh
-│   └── demo_checklist.md
-└── deploy/
-    ├── docker-compose.yml
-    ├── install.sh
-    ├── KIBANA_DASHBOARD_CONFIG.json
-    └── KIBANA_DASHBOARD_CONFIG.ndjson
+|   ├── test-hids-complete.sh           # Combined test runner
+|   ├── TEST_RESULTS.md                 # Test documentation
+|   ├── scenario_1_new_user.sh          # User account test
+|   ├── scenario_2_ssh_key.sh           # SSH key test
+|   ├── scenario_3_process.sh           # Process test
+|   ├── scenario_4_file_modify.sh       # File modification test
+|   ├── scenario_5_brute_force.sh       # Brute force test
+│   └── DEMO_SCRIPT.sh                  # Interactive demo script
+├── user-docs/
+│   ├── USER_README.md                  # User manual
+│   └──  QUICKSTART.md                  # 5-minute quick start
+```
 ---
 
 ## 🎬 Live Demo
@@ -180,7 +177,7 @@ hids-capstone/
 
 ### Edit Thresholds
 
-```bash
+cbash
 # Edit configuration file
 sudo nano /var/lib/hids/hids.conf
 

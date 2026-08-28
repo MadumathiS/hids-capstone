@@ -1,0 +1,43 @@
+# HIDS runtime and logs
+/var/lib/hids/
+/var/log/hids*
+*.log
+*.log.*
+*.gz
+
+# System and editor files
+.DS_Store
+.swp
+*~
+*.bak
+*.swp
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Local testing
+test_output/
+temp/
+sandbox/
+*.tmp
+
+# Credentials - NEVER commit these!
+*.key
+*.pem
+*.ppk
+*password*
+*secret*
+*credentials*
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
