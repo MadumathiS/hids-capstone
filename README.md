@@ -144,8 +144,14 @@ hids-capstone/
 │   ├── CONFIGURATION.md
 │   └── TROUBLESHOOTING.md
 ├── tests/
-│   ├── test-hids-complete.sh
-│   └── TEST_RESULTS.md
+|   ├── test-hids-complete.sh        Combined test runner
+|   ├── TEST_RESULTS.md              Test documentation
+|   ├── scenario_1_new_user.sh       User account test
+|   ├── scenario_2_ssh_key.sh        SSH key test
+|   ├── scenario_3_process.sh        Process test
+|   ├── scenario_4_file_modify.sh    File modification test
+|   └── scenario_5_brute_force.sh    Brute force test
+|
 ├── demo/
 │   ├── DEMO_GUIDE.md
 │   ├── demo_script.sh
