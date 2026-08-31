@@ -179,10 +179,10 @@ When you see alerts, they're color-coded:
 
 Example alerts you might see:
 ```
-[2024-01-15 14:23:45] [CRITICAL] FILE INTEGRITY VIOLATION: /etc/passwd
-[2024-01-15 14:24:12] [HIGH] Process running from /tmp: /tmp/suspicious_binary
-[2024-01-15 14:25:00] [HIGH] New home directory detected: /home/attacker
-[2024-01-15 14:26:33] [MEDIUM] Backgrounded process detected: PID=5421
+[2026-08-28 14:23:45] [CRITICAL] FILE INTEGRITY VIOLATION: /etc/passwd
+[2026-08-2814:24:12] [HIGH] Process running from /tmp: /tmp/suspicious_binary
+[2026-08-28 14:25:00] [HIGH] New home directory detected: /home/attacker
+[2026-08-28 14:26:33] [MEDIUM] Backgrounded process detected: PID=5421
 ```
 
 ---
@@ -192,8 +192,8 @@ Example alerts you might see:
 ### Alert Log (`/var/lib/hids/alerts.log`)
 ```
 Shows only threats and suspicious activity:
-[2024-01-15 14:23:45] [CRITICAL] FILE INTEGRITY VIOLATION: /etc/passwd
-[2024-01-15 14:24:12] [HIGH] Process running from /tmp: /tmp/bot
+[2026-08-28 14:23:45] [CRITICAL] FILE INTEGRITY VIOLATION: /etc/passwd
+[2026-08-28 14:24:12] [HIGH] Process running from /tmp: /tmp/bot
 ```
 
 ### Scan Log (`/var/lib/hids/scans.log`)

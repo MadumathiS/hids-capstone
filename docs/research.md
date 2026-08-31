@@ -1,10 +1,8 @@
 # Research.md - HIDS Capstone Project
 
-**Team:** [Your Team Name]  
-**Date Started:** [Start Date]  
-**Date Completed:** [Completion Date]  
+**Team:** Sentinel Team (Hanah M, Sajjad Shahpoor, Umrah Javed, Madumathi Singaraju ) 
 **Project:** Host Intrusion Detection System (HIDS) - Linux Capstone  
-**Institution:** [Your School/Organization]  
+**Institution:** Becode  
 
 ---
 
@@ -1004,26 +1002,6 @@ This is the principle behind every professional monitoring tool. It's also achie
 
 ---
 
-## TEAM INFORMATION
-
-**Project:** Linux Capstone - Host Intrusion Detection System  
-**Team Size:** 4 people  
-**Timeline:** 1 week  
-**Date Completed:** [Completion Date]  
-**Institution:** [Your School/Organization]  
-
----
-
-## DOCUMENT INFORMATION
-
-**Document Version:** 1.0  
-**Last Updated:** [Date]  
-**Status:** Complete  
-**Total Words:** 3500+  
-**Pages:** 12+  
-
 This research document was completed BEFORE coding began. All design decisions reference and are justified by this document.
 
 ---
-
-**Ready to build. All questions answered. Design decisions documented.** 🚀
