@@ -14,7 +14,6 @@ This document gives you:
 - How to prepare your demo environment
 - Attack scenarios to simulate (easy to medium difficulty)
 - What to demonstrate
-- Questions you'll be asked and how to answer
 
 ---
 
@@ -285,25 +284,6 @@ sudo rm /etc/passwd.backup
 □ Scripts are not running other tasks
 ```
 
-### Opening (Explain the Project)
-
-```
-"We built a Host Intrusion Detection System in Bash that monitors
-a Linux system for security threats.
-
-Our HIDS checks five critical areas:
-1. System Health     - Is the server overloaded or under attack?
-2. User Activity     - Who's accessing the system?
-3. Processes         - What's running that shouldn't be?
-4. Network Activity  - What ports are open? Where are connections going?
-5. File Integrity    - Have critical files been modified?
-
-Unlike firewalls that stop attacks at the network edge, HIDS assumes
-the attacker is already inside and hunts for signs of compromise.
-
-Today we're going to simulate an attack and show you how HIDS detects it."
-```
-
 ### During Demo
 
 ```bash
@@ -334,9 +314,7 @@ echo ""
 echo "See the CRITICAL alert? HIDS detected the new account immediately!"
 ```
 
-### Explanation (What To Say)
-
-For each alert shown, explain:
+### Explanation
 
 **1. WHAT is being alerted on?**
 ```
@@ -393,133 +371,6 @@ The key insight: detection through deviation.
 We baseline the normal state, then alert on anomalies.
 This is exactly what commercial tools like Wazuh and OSSEC do."
 ```
-
----
-
-## QUESTIONS YOU'LL BE ASKED
-
-### Technical Questions
-
-**Q: For each piece of information your tool collects: where exactly on the system does it come from?**
-
-A: *(For each module)*
-- System Health: `uptime`, `free`, `df`, `/proc/loadavg`, `/proc/meminfo`
-- User Activity: `/var/log/auth.log`, `lastlog`, `w`, `/etc/passwd`
-- Processes: `ps aux`, `/proc/[pid]/`, `netstat -tulnp`
-- Network: `netstat`, `ss`, `/proc/net/tcp`, `lsof`
-- File Integrity: Direct file access, `stat`, SHA256 hashing
-
-**Q: What is the difference between a HIDS and a NIDS?**
-
-A: HIDS = Host IDS, runs ON the machine, monitors from inside
-   NIDS = Network IDS, runs on network equipment, monitors all traffic
-   
-   HIDS sees what's actually happening on the system (filesystem, processes)
-   NIDS sees what's coming in/out of network
-   
-   Both are needed: NIDS stops external attacks, HIDS finds what got past NIDS
-
-**Q: A sophisticated attacker knows your tool is running. How might they try to evade it?**
-
-A: Good question. An attacker could:
-   - Kill the HIDS process (we'd lose detection, but cron would restart it)
-   - Modify the HIDS script (our baseline would catch it if the script itself is monitored)
-   - Fill up logs to hide tracks (we'd alert on disk space usage)
-   - Use rootkit to hide from /proc (we'd detect orphaned processes)
-   - Load kernel module (we'd detect with lsmod)
-   
-   Real mitigation: send logs to remote syslog server so attacker can't delete them
-
-**Q: What was the hardest design decision your team made, and why?**
-
-A: *(Answer should be specific to your design, examples)*
-   - Deciding what constitutes a baseline vs. what to threshold on
-   - Choosing alert frequency (every 5 minutes = more detection, more logs)
-   - Modularity vs. monolithic design (separate scripts vs. one big script)
-   - Deciding which files to integrity-check (monitor everything vs. just critical)
-   - Alert format: JSON vs. syslog format (JSON is better for integration)
-
-**Q: How do you distinguish a real alert from a false positive? How did you tune your tool to reduce noise?**
-
-A: Our approach:
-   1. Baseline: Record normal state on first run
-   2. Deviation detection: Only alert on changes to baseline
-   3. Thresholds: System-specific (CPU load relative to core count)
-   4. Severity levels: CRITICAL only for obvious threats
-   5. Whitelist: Known-good processes, expected cron jobs
-   6. Re-baselining: After legitimate changes, update baseline
-   
-   Result: HIDS alerts only on things worth investigating, not every change
-
-**Q: If you had two more weeks, what would you build next?**
-
-A: *(Think ahead about enhancements)*
-   - Integration with ticketing system (auto-create tickets)
-   - Rootkit detection with chkrootkit
-   - Attack simulation mode (test if HIDS catches simulated attacks)
-   - Performance profiling (how much CPU/memory does HIDS use?)
-   - Endpoint detection and response (auto-kill suspicious processes)
-   - Central logging (aggregate logs from multiple systems)
-
-### Project Management Questions
-
-**Q: How did your team divide the work?**
-
-A: *(Be honest about who did what)*
-   - Person A: System health module
-   - Person B: User activity + file integrity modules
-   - Person C: Process/network modules + alerting
-   - All: Research, testing, documentation
-   
-   Coordination: Daily sync meetings, shared Git repo, code reviews
-
-**Q: What was the biggest challenge your team faced?**
-
-A: *(Examples)*
-   - Understanding how to parse /proc filesystem without existing tools
-   - Deciding on alert thresholds without production data
-   - Testing edge cases (what if there are 10,000 processes?)
-   - Making the script robust across different Linux distributions
-
-**Q: How did you test your tool?**
-
-A: We created attack scenarios:
-   - Manual account creation to test user detection
-   - Created processes from /tmp to test process detection
-   - Simulated brute force with failed SSH attempts
-   - Modified files to test integrity checking
-   - Ran with different resource loads to test health alerts
-   - Verified each alert logs correctly
-
----
-
-## COMMON MISTAKES TO AVOID
-
-❌ **Don't show unclean baseline**
-- Baseline should be from a system with no suspicious activity
-- If you're unsure, reinstall the OS and create fresh baseline
-
-❌ **Don't run demo on a production system**
-- Use a VM or lab environment
-- You don't want to accidentally kill a production process
-
-❌ **Don't forget to explain findings**
-- Don't just show an alert and move on
-- Walk through: WHAT, WHERE, WHY, HOW
-
-❌ **Don't mumble or go too fast**
-- Audience is learning this for first time
-- Speak clearly, pause between demo steps
-- Make sure text on screen is readable
-
-❌ **Don't ad-lib code changes during demo**
-- Have your demo scripts prepared and tested
-- "Let me run through it again" is ok; "Let me try this..." is not
-
-❌ **Don't forget to cleanup after demo**
-- Remove fake accounts, processes, files
-- Restore system to clean state
-- Reset baseline after demo modifications
 
 ---
 
