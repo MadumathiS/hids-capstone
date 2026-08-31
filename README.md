@@ -191,17 +191,19 @@ hids-capstone/
 
 ### Edit Thresholds
 
+#### Edit configuration file
+```
 cbash
-# Edit configuration file
 sudo nano /var/lib/hids/hids.conf
-
+```
 # Key settings:
-CPU_LOAD_WARNING=2.0          # Relative to cores
-CPU_LOAD_CRITICAL=4.0
-MEMORY_USED_WARNING=80        # Percentage
-MEMORY_USED_CRITICAL=95
-DISK_USED_WARNING=80
-DISK_USED_CRITICAL=95
+
+- CPU_LOAD_WARNING=2.0          # Relative to cores
+- CPU_LOAD_CRITICAL=4.0
+- MEMORY_USED_WARNING=80        # Percentage
+- MEMORY_USED_CRITICAL=95
+- DISK_USED_WARNING=80
+- DISK_USED_CRITICAL=95
 
 # Save and restart automation for changes to apply
 ```
@@ -450,8 +452,6 @@ As long as you include the license and don't hold us liable.
 
 - **How do I use HIDS?** → See [user-docs/USER_README.md](user-docs/USER_README.md)
 - **How does it work?** → See [docs/DESIGN.md](docs/DESIGN.md)
-- **Having issues?** → See [user-docs/TROUBLESHOOTING.md](user-docs/TROUBLESHOOTING.md)
-
 ---
 
 ## 🏆 Project Success
