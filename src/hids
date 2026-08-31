@@ -228,39 +228,46 @@ scan_users_and_access() {
     
     # Check 2: Recent login attempts
     echo -e "\nRecent login history:" | tee -a "$SCAN_LOG"
-    last -n 20 2>/dev/null | tee -a "$SCAN_LOG"
+    lastlog -t 7 2>/dev/null | tee -a "$SCAN_LOG"
     
-    # Check 3: Failed login attempts
-    echo -e "\nFailed login attempts (last 24h):" | tee -a "$SCAN_LOG"
-    grep "Failed password" /var/log/auth.log 2>/dev/null | tail -10 | tee -a "$SCAN_LOG"
+    # Check 3: Users with home directories (potential backdoor accounts)
+    echo -e "\nSystem users check:" | tee -a "$SCAN_LOG"
+    awk -F: '$3 >= 1000 {print $1, "UID:", $3}' /etc/passwd | tee -a "$SCAN_LOG"
     
-    # Check 4: Users with elevated privileges
-    log_alert "$SEVERITY_MEDIUM" "Users with sudo privileges:"
-    getent group sudo 2>/dev/null | cut -d: -f4 | tee -a "$SCAN_LOG"
-    
-    # Check 5: Recently added users
-    echo -e "\nRecently modified user accounts:" | tee -a "$SCAN_LOG"
-    find /home -maxdepth 1 -type d -mtime -7 2>/dev/null | while read dir; do
-        if [[ "$dir" != "/home" ]]; then
-            log_alert "$SEVERITY_HIGH" "New home directory detected: $dir"
-        fi
-    done
-    
-    # Check 6: Unauthorized SSH keys
-    echo -e "\nChecking SSH authorized_keys for all users:" | tee -a "$SCAN_LOG"
-    for user_entry in $(cut -d: -f1,6 /etc/passwd); do
-        IFS=':' read -r username home_dir <<< "$user_entry"
-        ssh_dir="$home_dir/.ssh"
-        if [[ -d "$ssh_dir" && -f "$ssh_dir/authorized_keys" ]]; then
-            key_count=$(wc -l < "$ssh_dir/authorized_keys")
-            echo "User $username has $key_count SSH keys" | tee -a "$SCAN_LOG"
-            
-            # Alert on excessive keys
-            if [[ $key_count -gt 5 ]]; then
-                log_alert "$SEVERITY_HIGH" "User $username has unusually many SSH keys ($key_count)"
+    # Check 4: SSH keys for each user (WITH IGNORE FILTER)
+    echo -e "\nSSH key inventory:" | tee -a "$SCAN_LOG"
+    for user_dir in /home/* /root; do
+        if [[ -d "$user_dir/.ssh" ]]; then
+            user=$(basename "$user_dir")
+            key_count=$(ls -1 "$user_dir/.ssh/authorized_keys" 2>/dev/null | wc -l)
+            if [[ $key_count -gt 1 ]]; then
+                log_alert "$SEVERITY_HIGH" "User $user has $key_count SSH keys (possible backdoor)"
             fi
+            cat "$user_dir/.ssh/authorized_keys" 2>/dev/null | while read key_line; do
+                # SKIP if it matches ignore patterns
+                if should_ignore "$key_line"; then
+                    continue
+                fi
+                echo "$user: $key_line" | tee -a "$SCAN_LOG"
+            done
         fi
     done
+    
+    # Check 5: Failed login attempts (brute force detection)
+    echo -e "\nFailed login attempts:" | tee -a "$SCAN_LOG"
+    grep "Failed password" /var/log/auth.log 2>/dev/null | tail -20 | tee -a "$SCAN_LOG"
+    
+    # Count failed attempts per IP (potential brute force)
+    echo -e "\nBrute force detection (failed attempts per IP):" | tee -a "$SCAN_LOG"
+    grep "Failed password" /var/log/auth.log 2>/dev/null | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn | while read count ip; do
+        if [[ $count -gt 5 ]]; then
+            log_alert "$SEVERITY_HIGH" "Possible brute force attack: $ip ($count failed attempts)"
+        fi
+    done
+    
+    # Check 6: Sudo usage
+    echo -e "\nRecent sudo usage:" | tee -a "$SCAN_LOG"
+    grep "COMMAND=" /var/log/auth.log 2>/dev/null | tail -10 | tee -a "$SCAN_LOG"
 }
 
 ################################################################################
@@ -269,18 +276,18 @@ scan_users_and_access() {
 
 scan_network() {
     log_header "NETWORK MONITORING"
-    log_info "Analyzing network activity..."
+    log_info "Scanning network activity and listening ports..."
     
     # Check 1: Listening ports
-    echo "Ports currently listening:" | tee -a "$SCAN_LOG"
+    echo "Listening ports:" | tee -a "$SCAN_LOG"
     if command -v ss &> /dev/null; then
-        ss -tulnp 2>/dev/null | grep LISTEN | tee -a "$SCAN_LOG"
+        ss -tulnp 2>/dev/null | tee -a "$SCAN_LOG"
     else
-        netstat -tulnp 2>/dev/null | grep LISTEN | tee -a "$SCAN_LOG"
+        netstat -tulnp 2>/dev/null | tee -a "$SCAN_LOG"
     fi
     
     # Check 2: Established connections
-    echo -e "\nEstablished network connections:" | tee -a "$SCAN_LOG"
+    echo -e "\nEstablished connections:" | tee -a "$SCAN_LOG"
     if command -v ss &> /dev/null; then
         ss -tulnp 2>/dev/null | grep ESTAB | tee -a "$SCAN_LOG"
     else
@@ -364,450 +371,13 @@ scan_persistence() {
         fi
     done
     
-    # Check 4: Cron backdoors (common persistence method) (WITH IGNORE FILTER)
+    # Check 4: Cron backdoors (common persistence method) WITH IGNORE FILTER
     echo -e "\nChecking for cron-based persistence:" | tee -a "$SCAN_LOG"
     grep -r "bash\|sh\|nc\|ncat" /etc/cron* 2>/dev/null | while read line; do
         # SKIP if it matches ignore patterns
         if should_ignore "$line"; then
             continue
         fi
-        
-        log_alert "$SEVERITY_HIGH" "Potentially suspicious cron job: $line"
-    done
-}
-
-################################################################################
-# 7. ROOTKIT DETECTION
-################################################################################
-
-scan_rootkits() {
-    log_header "ROOTKIT & KERNEL-LEVEL THREATS"
-    log_info "Scanning for kernel-level compromise..."
-    
-    # Check 1: Loaded kernel modules
-    echo "Loaded kernel modules:" | tee -a "$SCAN_LOG"
-    lsmod 2>/dev/null | tee -a "$SCAN_LOG"
-    
-    # Check 2: Known rootkit module names
-    echo -e "\nChecking for known rootkit modules:" | tee -a "$SCAN_LOG"
-    known_rootkits=("reptile" "diamorphine" "suterusu" "komodia" "libkmod")
-    for rootkit in "${known_rootkits[@]}"; do
-        if lsmod 2>/dev/null | grep -iq "$rootkit"; then
-            log_alert "$SEVERITY_CRITICAL" "POSSIBLE ROOTKIT DETECTED: $rootkit"
-        fi
-    done
-    
-    # Check 3: Integrity of core system binaries
-    echo -e "\nVerifying critical binary integrity:" | tee -a "$SCAN_LOG"
-    if command -v dpkg &> /dev/null; then
-        dpkg --verify 2>/dev/null | grep -E 'bin|sbin' | head -20 | tee -a "$SCAN_LOG"
-    fi
-    
-    # Check 4: Orphaned processes (process not in /proc)
-    echo -e "\nChecking for orphaned processes:" | tee -a "$SCAN_LOG"
-    ps aux > /tmp/ps_list_$$.txt
-    for pid in /proc/[0-9]*; do
-        pid_num=$(basename "$pid")
-        if ! grep -q " $pid_num " /tmp/ps_list_$$.txt; then
-            log_alert "$SEVERITY_CRITICAL" "Orphaned process detected: PID $pid_num"
-        fi
-    done
-    rm -f /tmp/ps_list_$$.txt
-}
-
-################################################################################
-# 8. LOG ANALYSIS
-################################################################################
-
-analyze_logs() {
-    log_header "SYSTEM LOG ANALYSIS"
-    log_info "Analyzing system logs for suspicious activity..."
-    
-    # Check 1: Authentication logs
-    echo "Recent authentication attempts:" | tee -a "$SCAN_LOG"
-    tail -20 /var/log/auth.log 2>/dev/null | tee -a "$SCAN_LOG"
-    
-    # Check 2: Privilege escalation attempts
-    echo -e "\nPrivilege escalation attempts:" | tee -a "$SCAN_LOG"
-    grep "sudo.*COMMAND" /var/log/auth.log 2>/dev/null | tail -10 | tee -a "$SCAN_LOG"
-    
-    # Check 3: Failed sudo attempts
-    echo -e "\nFailed sudo attempts:" | tee -a "$SCAN_LOG"
-    grep "sudo.*USER" /var/log/auth.log 2>/dev/null | grep "NOT allowed" | tail -5 | tee -a "$SCAN_LOG"
-}
-
-################################################################################
-# MAIN EXECUTION
-################################################################################
-
-print_banner() {
-    echo -e "${GREEN}"
-    echo "╔═══════════════════════════════════════════════════════════╗"
-    echo "║         BASH HIDS - Host Intrusion Detection System        ║"
-    echo "║              Version $HIDS_VERSION - Find Them First        ║"
-    echo "╚═══════════════════════════════════════════════════════════╝"
-    echo -e "${NC}"
-    echo "Philosophy: 'Find them before they find you'"
-    echo "Assumption: The intruder is ALREADY INSIDE the system"
-    echo ""
-}
-
-print_summary() {
-    echo ""
-    echo "╔════════════════════════════════════════════════════════════╗"
-    echo "║                     SCAN SUMMARY                            ║"
-    echo "╚════════════════════════════════════════════════════════════╝"
-    echo -e "Total Alerts: ${RED}$ALERT_COUNT${NC}"
-    echo "Alert Log: $ALERT_LOG"
-    echo "Scan Log: $SCAN_LOG"
-    echo ""
-    
-    if [[ $ALERT_COUNT -gt 0 ]]; then
-        echo -e "${RED}[!] Potential security issues detected. Review logs immediately.${NC}"
-        tail -5 "$ALERT_LOG"
-    else
-        echo -e "${GREEN}[✓] No alerts detected in this scan.${NC}"
-    fi
-    echo ""
-}
-
-main() {
-    print_banner
-    
-    # Check if running as root
-    if [[ $EUID -ne 0 ]]; then
-        echo -e "${RED}[!] This script should be run as root for best results${NC}"
-        echo "    Continuing with limited privileges..."
-    fi
-    
-    setup
-    log_info "====== HIDS Scan Started ======"
-    log_info "Timestamp: $(date)"
-    
-    # Run all detection modules
-    scan_processes
-    check_file_integrity
-    scan_users_and_access
-    scan_network
-    scan_scheduled_tasks
-    scan_persistence
-    scan_rootkits
-    analyze_logs
-    
-    log_info "====== HIDS Scan Completed ======"
-    print_summary
-}
-
-# Parse command-line arguments
-case "${1:-}" in
-    "--baseline")
-        echo "Creating baseline for file integrity monitoring..."
-        setup
-        create_baseline_files
-        echo "Baseline created. Run the scanner to check for changes."
-        ;;
-    "--help")
-        echo "Usage: $0 [OPTION]"
-        echo "  (no args)   Run full HIDS scan"
-        echo "  --baseline  Create file integrity baseline"
-        echo "  --help      Show this message"
-        ;;
-    *)
-        main
-        ;;
-esac
-readonly NC='\033[0m' # No Color
-
-# Initialize
-ALERT_COUNT=0
-ERROR_COUNT=0
-
-################################################################################
-# UTILITY FUNCTIONS
-################################################################################
-
-setup() {
-    mkdir -p "$HIDS_HOME" "$BASELINE_DIR"
-    touch "$ALERT_LOG" "$SCAN_LOG"
-}
-
-log_alert() {
-    local severity="$1"
-    local message="$2"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    
-    echo "[$timestamp] [$severity] $message" | tee -a "$ALERT_LOG"
-    ((ALERT_COUNT++))
-    
-    # Color output based on severity
-    case "$severity" in
-        "$SEVERITY_CRITICAL") echo -e "${RED}[!] CRITICAL: $message${NC}" ;;
-        "$SEVERITY_HIGH") echo -e "${YELLOW}[!] HIGH: $message${NC}" ;;
-        "$SEVERITY_MEDIUM") echo -e "${BLUE}[*] MEDIUM: $message${NC}" ;;
-    esac
-}
-
-log_info() {
-    local message="$1"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[$timestamp] [INFO] $message" | tee -a "$SCAN_LOG"
-}
-
-log_header() {
-    local message="$1"
-    echo "" | tee -a "$SCAN_LOG"
-    echo "=== $message ===" | tee -a "$SCAN_LOG"
-    echo "" | tee -a "$SCAN_LOG"
-}
-
-################################################################################
-# 1. PROCESS MONITORING
-################################################################################
-
-scan_processes() {
-    log_header "PROCESS MONITORING"
-    log_info "Scanning for suspicious processes..."
-    
-    # Check 1: Processes running from /tmp (malware hotspot)
-    echo "Checking for processes in /tmp..." | tee -a "$SCAN_LOG"
-    ps aux | grep -v grep | awk '{print $11}' | grep -E '(/tmp|\.tmp)' | while read proc; do
-        log_alert "$SEVERITY_HIGH" "Process running from /tmp: $proc"
-    done
-    
-    # Check 2: Processes without controlling terminal (daemon behavior - suspicious)
-    echo "Checking for processes without terminal..." | tee -a "$SCAN_LOG"
-    ps aux | awk '$7 ~ /\?/ && $1 !~ /root|systemd|syslog/ {print $0}' | while read line; do
-        pid=$(echo "$line" | awk '{print $2}')
-        cmd=$(echo "$line" | awk '{print $11}')
-        if [[ ! "$cmd" =~ ^(\[|systemd|syslog|sshd|dbus|cron) ]]; then
-            log_alert "$SEVERITY_MEDIUM" "Backgrounded process detected: PID=$pid CMD=$cmd"
-        fi
-    done
-    
-    # Check 3: Processes with network connections (potential C2)
-    echo "Checking for processes with network connections..." | tee -a "$SCAN_LOG"
-    if command -v netstat &> /dev/null; then
-        netstat -tulnp 2>/dev/null | grep -E 'ESTABLISHED|LISTEN' | tail -10 | tee -a "$SCAN_LOG"
-    elif command -v ss &> /dev/null; then
-        ss -tulnp 2>/dev/null | grep -E 'ESTAB|LISTEN' | tail -10 | tee -a "$SCAN_LOG"
-    fi
-    
-    # Check 4: Look for suspicious process names
-    echo "Checking for suspicious process names..." | tee -a "$SCAN_LOG"
-    suspicious_patterns=("\.tmp|/tmp|cryptominer|miner|xmr|bot|shell|nc|bash -i|rev|perl -e")
-    for pattern in "${suspicious_patterns[@]}"; do
-        ps aux | grep -v grep | grep -i "$pattern" | while read line; do
-            pid=$(echo "$line" | awk '{print $2}')
-            cmd=$(echo "$line" | awk '{print $11}')
-            log_alert "$SEVERITY_HIGH" "Suspicious process name detected: PID=$pid - $cmd"
-        done
-    done
-}
-
-################################################################################
-# 2. FILE INTEGRITY MONITORING
-################################################################################
-
-create_baseline_files() {
-    log_info "Creating file integrity baseline..."
-    
-    local critical_files=(
-        "/etc/passwd"
-        "/etc/shadow"
-        "/etc/sudoers"
-        "/etc/ssh/sshd_config"
-        "/root/.ssh/authorized_keys"
-        "/etc/crontab"
-        "/bin/bash"
-        "/bin/sh"
-        "/usr/bin/sudo"
-    )
-    
-    for file in "${critical_files[@]}"; do
-        if [[ -f "$file" || -d "$file" ]]; then
-            sha256sum "$file" 2>/dev/null > "$BASELINE_DIR/$(basename $file).sha256"
-        fi
-    done
-    
-    log_info "Baseline created for critical files"
-}
-
-check_file_integrity() {
-    log_header "FILE INTEGRITY CHECK"
-    log_info "Checking for modified critical files..."
-    
-    for hash_file in "$BASELINE_DIR"/*.sha256; do
-        if [[ -f "$hash_file" ]]; then
-            while IFS=' ' read -r stored_hash file_path; do
-                if [[ -f "$file_path" ]]; then
-                    current_hash=$(sha256sum "$file_path" 2>/dev/null | awk '{print $1}')
-                    if [[ "$current_hash" != "$stored_hash" ]]; then
-                        log_alert "$SEVERITY_CRITICAL" "FILE INTEGRITY VIOLATION: $file_path"
-                        ls -lah "$file_path" | tee -a "$SCAN_LOG"
-                    fi
-                elif [[ -e "$file_path" ]]; then
-                    log_alert "$SEVERITY_HIGH" "File changed type (was file, now something else): $file_path"
-                else
-                    log_alert "$SEVERITY_HIGH" "MISSING FILE: $file_path"
-                fi
-            done < "$hash_file"
-        fi
-    done
-}
-
-################################################################################
-# 3. USER & ACCESS MONITORING
-################################################################################
-
-scan_users_and_access() {
-    log_header "USER & ACCESS MONITORING"
-    log_info "Scanning for suspicious user activity..."
-    
-    # Check 1: Currently logged-in users
-    echo "Current logged-in users:" | tee -a "$SCAN_LOG"
-    w -h 2>/dev/null | tee -a "$SCAN_LOG"
-    
-    # Check 2: Recent login attempts
-    echo -e "\nRecent login history:" | tee -a "$SCAN_LOG"
-    last -n 20 2>/dev/null | tee -a "$SCAN_LOG"
-    
-    # Check 3: Failed login attempts
-    echo -e "\nFailed login attempts (last 24h):" | tee -a "$SCAN_LOG"
-    grep "Failed password" /var/log/auth.log 2>/dev/null | tail -10 | tee -a "$SCAN_LOG"
-    
-    # Check 4: Users with elevated privileges
-    log_alert "$SEVERITY_MEDIUM" "Users with sudo privileges:"
-    getent group sudo 2>/dev/null | cut -d: -f4 | tee -a "$SCAN_LOG"
-    
-    # Check 5: Recently added users
-    echo -e "\nRecently modified user accounts:" | tee -a "$SCAN_LOG"
-    find /home -maxdepth 1 -type d -mtime -7 2>/dev/null | while read dir; do
-        if [[ "$dir" != "/home" ]]; then
-            log_alert "$SEVERITY_HIGH" "New home directory detected: $dir"
-        fi
-    done
-    
-    # Check 6: Unauthorized SSH keys
-    echo -e "\nChecking SSH authorized_keys for all users:" | tee -a "$SCAN_LOG"
-    for user_entry in $(cut -d: -f1,6 /etc/passwd); do
-        IFS=':' read -r username home_dir <<< "$user_entry"
-        ssh_dir="$home_dir/.ssh"
-        if [[ -d "$ssh_dir" && -f "$ssh_dir/authorized_keys" ]]; then
-            key_count=$(wc -l < "$ssh_dir/authorized_keys")
-            echo "User $username has $key_count SSH keys" | tee -a "$SCAN_LOG"
-            
-            # Alert on excessive keys
-            if [[ $key_count -gt 5 ]]; then
-                log_alert "$SEVERITY_HIGH" "User $username has unusually many SSH keys ($key_count)"
-            fi
-        fi
-    done
-}
-
-################################################################################
-# 4. NETWORK MONITORING
-################################################################################
-
-scan_network() {
-    log_header "NETWORK MONITORING"
-    log_info "Analyzing network activity..."
-    
-    # Check 1: Listening ports
-    echo "Ports currently listening:" | tee -a "$SCAN_LOG"
-    if command -v ss &> /dev/null; then
-        ss -tulnp 2>/dev/null | grep LISTEN | tee -a "$SCAN_LOG"
-    else
-        netstat -tulnp 2>/dev/null | grep LISTEN | tee -a "$SCAN_LOG"
-    fi
-    
-    # Check 2: Established connections
-    echo -e "\nEstablished network connections:" | tee -a "$SCAN_LOG"
-    if command -v ss &> /dev/null; then
-        ss -tulnp 2>/dev/null | grep ESTAB | tee -a "$SCAN_LOG"
-    else
-        netstat -tulnp 2>/dev/null | grep ESTABLISHED | tee -a "$SCAN_LOG"
-    fi
-    
-    # Check 3: Suspicious ports
-    echo -e "\nChecking for suspicious listening ports..." | tee -a "$SCAN_LOG"
-    suspicious_ports=(4444 5555 6666 7777 8888 31337 9999)
-    for port in "${suspicious_ports[@]}"; do
-        if netstat -tulnp 2>/dev/null | grep -q ":$port "; then
-            log_alert "$SEVERITY_HIGH" "Suspicious port listening: $port"
-        fi
-    done
-    
-    # Check 4: Unusual outbound connections
-    echo -e "\nUnusual outbound connections:" | tee -a "$SCAN_LOG"
-    if command -v ss &> /dev/null; then
-        ss -tun 2>/dev/null | awk '$1=="tcp" && $2=="ESTAB" && $5 !~ /^(127\.|192\.168\.|10\.|172\.16)/ {print}' | tee -a "$SCAN_LOG"
-    fi
-}
-
-################################################################################
-# 5. SCHEDULED TASKS MONITORING
-################################################################################
-
-scan_scheduled_tasks() {
-    log_header "SCHEDULED TASKS MONITORING"
-    log_info "Scanning cron jobs and scheduled tasks..."
-    
-    # Check 1: System crontab
-    echo "System crontab (/etc/crontab):" | tee -a "$SCAN_LOG"
-    cat /etc/crontab 2>/dev/null | grep -v '^#' | grep -v '^$' | tee -a "$SCAN_LOG"
-    
-    # Check 2: User crontabs
-    echo -e "\nUser crontabs:" | tee -a "$SCAN_LOG"
-    for user in $(cut -d: -f1 /etc/passwd); do
-        cron_jobs=$(crontab -u "$user" -l 2>/dev/null | grep -v '^#' | grep -v '^$')
-        if [[ -n "$cron_jobs" ]]; then
-            echo "User: $user" | tee -a "$SCAN_LOG"
-            echo "$cron_jobs" | tee -a "$SCAN_LOG"
-        fi
-    done
-    
-    # Check 3: Cron directories
-    echo -e "\nSystem cron directories:" | tee -a "$SCAN_LOG"
-    for dir in /etc/cron.d /etc/cron.daily /etc/cron.hourly /etc/cron.weekly /etc/cron.monthly; do
-        if [[ -d "$dir" ]]; then
-            ls -la "$dir" 2>/dev/null | tee -a "$SCAN_LOG"
-        fi
-    done
-    
-    # Check 4: Systemd timers
-    echo -e "\nActive systemd timers:" | tee -a "$SCAN_LOG"
-    systemctl list-timers 2>/dev/null | tee -a "$SCAN_LOG"
-}
-
-################################################################################
-# 6. PERSISTENCE MECHANISMS
-################################################################################
-
-scan_persistence() {
-    log_header "PERSISTENCE MECHANISMS"
-    log_info "Checking for malware persistence vectors..."
-    
-    # Check 1: Init.d startup scripts
-    echo "Checking /etc/init.d for suspicious scripts:" | tee -a "$SCAN_LOG"
-    ls -la /etc/init.d/ 2>/dev/null | tee -a "$SCAN_LOG"
-    
-    # Check 2: Systemd service files
-    echo -e "\nRecently modified systemd services:" | tee -a "$SCAN_LOG"
-    find /etc/systemd -type f -mtime -7 2>/dev/null | while read service; do
-        log_alert "$SEVERITY_MEDIUM" "Recently modified service: $service"
-    done
-    
-    # Check 3: Bash startup files (.bashrc, .profile)
-    echo -e "\nChecking bash startup files:" | tee -a "$SCAN_LOG"
-    for rc_file in /root/.bashrc /root/.bash_profile /root/.profile; do
-        if [[ -f "$rc_file" ]]; then
-            grep -vE '^#|^$|^[[:space:]]*$' "$rc_file" | tee -a "$SCAN_LOG"
-        fi
-    done
-    
-    # Check 4: Cron backdoors (common persistence method)
-    echo -e "\nChecking for cron-based persistence:" | tee -a "$SCAN_LOG"
-    grep -r "bash\|sh\|nc\|ncat" /etc/cron* 2>/dev/null | while read line; do
         log_alert "$SEVERITY_HIGH" "Potentially suspicious cron job: $line"
     done
 }
