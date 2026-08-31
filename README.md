@@ -1,10 +1,24 @@
 # HIDS - Host Intrusion Detection System
 
+**Team:** Sentinel Team 
 **Team Capstone Project: Monitor, detect, and respond to intrusions on Linux systems**
 
-## 📋 Overview
+---
 
-This is a **Host Intrusion Detection System (HIDS)** built entirely in Bash for a Linux Capstone Project. The tool monitors Linux systems for security threats across five critical monitoring areas.
+## About Sentinel Team
+
+**Sentinel Team** is a dedicated cybersecurity team focused on developing 
+advanced Host Intrusion Detection Systems for real-time threat detection, 
+monitoring, and response. This project represents our commitment to 
+building professional-grade security solutions that protect systems from 
+unauthorized access and malicious activity.
+
+### 🎯 Team Mission
+To create comprehensive security monitoring systems that detect and alert 
+on unauthorized system changes, suspicious activities, and potential 
+intrusions in real-time.
+
+---
 
 ### What is HIDS?
 
@@ -289,7 +303,6 @@ sudo journalctl -u hids.service -n 20
 
 ### Code Quality
 
-✅ 500+ lines of clean, commented Bash  
 ✅ Every function documented  
 ✅ Modular structure  
 ✅ No external dependencies  
