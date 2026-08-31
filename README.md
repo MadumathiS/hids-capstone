@@ -107,7 +107,6 @@ sudo bash deployment/setup-systemd.sh
 | [user-docs/USER_README.md](user-docs/USER_README.md) | Complete user guide | End users |
 | [docs/DESIGN.md](docs/DESIGN.md) | Architecture & technical details | Developers |
 | [demo/DEMO_GUIDE.md](demo/DEMO_GUIDE.md) | Demo preparation & scenarios | Team |
-| [user-docs/TROUBLESHOOTING.md](user-docs/TROUBLESHOOTING.md) | Common issues & fixes | Everyone |
 
 ---
 
