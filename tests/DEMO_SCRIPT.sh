@@ -3,6 +3,7 @@
 ################################################################################
 # HIDS Capstone Demo Script
 # Live demonstration of all 5 security scenarios
+# WITH DIRECT EMAIL ALERT GENERATION
 ################################################################################
 
 set -e
@@ -215,7 +216,7 @@ demo_scenario_5() {
     sleep 2
 }
 
-# Summary
+# Summary with Direct Email Generation
 demo_summary() {
     print_demo_section "DEMONSTRATION SUMMARY"
     
@@ -233,12 +234,61 @@ demo_summary() {
     
     print_success "All scenarios completed!"
     echo ""
+    
+    # ========== DIRECT EMAIL ALERT GENERATION ==========
+    print_step "Generating email alert summary..."
+    
+    # Get alert statistics
+    CRITICAL=$(sudo grep -c "\[CRITICAL\]" "$ALERT_LOG" 2>/dev/null || echo "0")
+    HIGH=$(sudo grep -c "\[HIGH\]" "$ALERT_LOG" 2>/dev/null || echo "0")
+    MEDIUM=$(sudo grep -c "\[MEDIUM\]" "$ALERT_LOG" 2>/dev/null || echo "0")
+    
+    # Create email body with alert summary
+    EMAIL_BODY="HIDS Capstone Demo - Alert Summary
+========================================
+
+Total Alerts Generated: $FINAL_COUNT
+
+Alert Breakdown:
+- CRITICAL: $CRITICAL
+- HIGH: $HIGH
+- MEDIUM: $MEDIUM
+
+Scenarios Tested:
+✓ Unauthorized user account creation
+✓ SSH backdoor key injection
+✓ Suspicious process execution
+✓ System file modification
+✓ Brute force login attempts
+
+Recent Alert Details:
+$(sudo tail -15 "$ALERT_LOG")
+
+System Information:
+- Hostname: $(hostname)
+- Date/Time: $(date)
+- Team: Sentinel Team
+- Status: Demo Completed Successfully
+
+---
+HIDS Security Monitoring System
+Real-time Threat Detection & Alerting"
+    
+    # Send email directly
+    echo "$EMAIL_BODY" | sudo mail -r "hids@red" -s "🚨 HIDS Demo Complete: $FINAL_COUNT alerts detected" singaraju.madumathi@gmail.com 2>/dev/null
+    
+    sleep 2
+    print_success "Email alert sent to singaraju.madumathi@gmail.com!"
+    echo ""
+    # ====================================================
+    
     echo "Next: View alerts in Kibana dashboard"
     echo "  → Open: http://localhost:5601"
     echo "  → See real-time alert visualization"
     echo ""
-    echo "Check email for notifications"
-    echo "  → Alerts sent to: singaraju.madumathi@gmail.com"
+    echo "Email notification sent!"
+    echo "  → Check: singaraju.madumathi@gmail.com"
+    echo "  → Summary: Alert counts and recent alerts"
     echo ""
 }
 
