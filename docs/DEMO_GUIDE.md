@@ -5,7 +5,7 @@
 
 ## OVERVIEW
 
-Your team must deliver a live demo showing:
+Team must deliver a live demo showing:
 1. HIDS running on a VM
 2. At least one alert being triggered with a simulated scenario
 3. Clear explanation of what was detected and why
@@ -454,8 +454,6 @@ A: Our approach:
 **Q: If you had two more weeks, what would you build next?**
 
 A: *(Think ahead about enhancements)*
-   - Email/Slack alerting for CRITICAL alerts
-   - Web dashboard to visualize alerts over time
    - Integration with ticketing system (auto-create tickets)
    - Rootkit detection with chkrootkit
    - Attack simulation mode (test if HIDS catches simulated attacks)
@@ -578,46 +576,3 @@ echo "Demo Complete!"
 ```
 
 ---
-
-## SCORING RUBRIC (What Evaluators Will Check)
-
-Your demo will be evaluated on:
-
-### ✅ Technical Correctness (40%)
-- HIDS properly detects the simulated attack
-- Alerts are logged with correct timestamp and severity
-- All 5 modules are implemented and functional
-- Code is clean and well-commented
-
-### ✅ Demonstration Quality (30%)
-- Scenario is clear and easy to follow
-- Explanation of what's happening is clear
-- Audience can understand cause and effect
-- Presentation is professional
-
-### ✅ Understanding (20%)
-- Team can explain design decisions
-- Team can answer technical questions
-- Team understands HIDS principles
-- Team can explain why their approach works
-
-### ✅ Documentation (10%)
-- README.md is complete and accurate
-- research.md answers all questions
-- Code comments are sufficient
-- Alert messages are clear and actionable
-
----
-
-## FINAL TIPS
-
-1. **Practice beforehand** - Run the demo 3+ times before presenting
-2. **Know your audience** - They're learning; explain clearly
-3. **Show confidence** - You built this; you know how it works
-4. **Answer honestly** - "I don't know, but I can find out" is better than guessing
-5. **Time management** - Plan for 15-20 minute demo (adjust as needed)
-6. **Have backup plan** - If something fails, move to next step
-
----
-
-**Good luck with your demo! You've built something real and useful. Let it show.**
