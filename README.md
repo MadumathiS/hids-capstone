@@ -260,7 +260,6 @@ sudo /usr/local/sbin/hids
 bash -n /usr/local/sbin/hids
 ```
 
-**[More troubleshooting →](user-docs/TROUBLESHOOTING.md)**
 
 ### "Too many alerts"
 
@@ -287,61 +286,6 @@ sudo systemctl list-timers hids.timer
 # Check logs
 sudo journalctl -u hids.service -n 20
 ```
-
----
-
-## ✅ Features
-
-### Core Features
-
-✅ All 5 monitoring modules implemented  
-✅ Professional alerting with severity levels  
-✅ Persistent logging with timestamps  
-✅ Automatic baseline creation  
-✅ Configurable thresholds  
-✅ Cron or systemd automation  
-✅ Color-coded terminal output  
-
-### Code Quality
-
-✅ Every function documented  
-✅ Modular structure  
-✅ No external dependencies  
-✅ Production-ready  
-
-### Documentation
-
-✅ Complete research document (all questions answered)  
-✅ User guide for non-technical users  
-✅ Technical documentation for developers  
-✅ Troubleshooting guide with common issues  
-✅ Demo scenarios for testing  
-
----
-
-## 🎯 Requirements Met
-
-### Must-Haves
-
-- ✅ Coverage of all 5 modules
-- ✅ Working alert system with timestamps and severity
-- ✅ Persistent log file
-- ✅ Automatic execution (cron/systemd)
-- ✅ Clean, commented code
-- ✅ Complete research.md
-- ✅ User documentation
-- ✅ Live demo with alert scenario
-
-### Nice-to-Haves
-
-- ✅ Baseline system (learns what's normal)
-- ✅ Configurable thresholds via config file
-- ✅ Summary report generation
-- ✅ Color-coded output
-- ✅ Severity levels
-- ✅ Whitelisting for false positives
-- ✅ Attack simulation scenarios
-- ✅ Comprehensive documentation
 
 ---
 
