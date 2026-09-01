@@ -1,6 +1,7 @@
 # HIDS - Host Intrusion Detection System
 
 **Team:** Sentinel Team 
+
 **Team Capstone Project: Monitor, detect, and respond to intrusions on Linux systems**
 
 ---
@@ -12,7 +13,7 @@ advanced Host Intrusion Detection Systems for real-time threat detection,
 monitoring, and response. This project represents our commitment to 
 building professional-grade security solutions that protect systems from 
 unauthorized access and malicious activity.
-
+![Sentinel Team](docs/Sentinel%20Team.png)
 ### 🎯 Team Mission
 To create comprehensive security monitoring systems that detect and alert 
 on unauthorized system changes, suspicious activities, and potential 
