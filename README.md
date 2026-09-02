@@ -118,20 +118,9 @@ sudo bash deployment/setup-systemd.sh
 Test how HIDS detects different threats:
 
 ```bash
-# Scenario 1: New user account (common backdoor method)
-bash tests/scenario_1_new_user.sh
 
-# Scenario 2: SSH key addition (unauthorized remote access)
-bash tests/scenario_2_ssh_key.sh
+bash DEMO_SCRIPT.sh
 
-# Scenario 3: Suspicious process from /tmp (malware location)
-bash tests/scenario_3_process.sh
-
-# Scenario 4: File modification (tampering with critical files)
-bash tests/scenario_4_file_modify.sh
-
-# Scenario 5: Brute force login attempts (password guessing)
-bash tests/scenario_5_brute_force.sh
 ```
 
 Each scenario shows how HIDS detects different attack techniques.
@@ -162,11 +151,6 @@ hids-capstone/
 ├── tests/
 |   ├── test-hids-complete.sh           # Combined test runner
 |   ├── TEST_RESULTS.md                 # Test documentation
-|   ├── scenario_1_new_user.sh          # User account test
-|   ├── scenario_2_ssh_key.sh           # SSH key test
-|   ├── scenario_3_process.sh           # Process test
-|   ├── scenario_4_file_modify.sh       # File modification test
-|   ├── scenario_5_brute_force.sh       # Brute force test
 │   └── DEMO_SCRIPT.sh                  # Interactive demo script
 ├── user-docs/
 │   ├── USER_README.md                  # User manual
