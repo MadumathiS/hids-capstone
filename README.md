@@ -92,6 +92,7 @@ sudo crontab -e
 # Add this line:
 */5 * * * * /usr/local/sbin/hids >> /var/log/hids.log 2>&1
 
+
 # Option B: Systemd Timer
 sudo bash deployment/setup-systemd.sh
 ```
@@ -149,25 +150,12 @@ hids-capstone/
 │   ├── hids                            # Main HIDS detection script
 │   └── config/hids.conf                # HIDS configuration file
 ├── tests/
-|   ├── test-hids-complete.sh           # Combined test runner
 |   ├── TEST_RESULTS.md                 # Test documentation
 │   └── DEMO_SCRIPT.sh                  # Interactive demo script
 ├── user-docs/
 │   ├── USER_README.md                  # User manual
 │   └──  QUICKSTART.md                  # 5-minute quick start
 ```
----
-
-## 🎬 Live Demo
-
-### What Gets Demonstrated
-
-1. **Normal System** → Run HIDS on clean system → **No alerts**
-2. **Simulated Attack** → Create backdoor account → **System unchanged to user**
-3. **Detection** → Run HIDS again → **CRITICAL alerts triggered**
-4. **Explanation** → Each team member explains module findings
-
-**Time:** 15-20 minute presentation
 
 ---
 

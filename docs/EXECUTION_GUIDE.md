@@ -14,4 +14,4 @@
 3. View HIDS Security Monitoring Dashboard
 
 ## Run Tests
-`sudo /usr/local/sbin/hids && sudo ./tests/test-hids-complete.sh`
+`sudo /usr/local/sbin/hids && sudo ./tests/DEMO_SCRIPT.sh`
